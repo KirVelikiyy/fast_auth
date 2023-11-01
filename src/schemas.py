@@ -16,7 +16,7 @@ class UserSchema(BaseModel):
     email: EmailStr
     first_name: str | None = None
     last_name: str | None = None
-    is_active: bool | None = None
+    is_active: bool | None = True
     is_admin: bool | None = False
     hashed_password: str
 
@@ -24,3 +24,6 @@ class UserSchema(BaseModel):
 class UserDbSchema(UserSchema):
     user_id: int
     added_at: datetime
+
+    class Config:
+        orm_mode = True
