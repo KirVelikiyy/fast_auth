@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class ProductSchema(BaseModel):
@@ -13,7 +13,7 @@ class ProductDbSchema(ProductSchema):
 
 class UserSchema(BaseModel):
     username: str
-    email: str
+    email: EmailStr
     first_name: str | None = None
     last_name: str | None = None
     is_active: bool | None = None
