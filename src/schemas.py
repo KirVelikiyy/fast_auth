@@ -2,15 +2,6 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
 
-class ProductSchema(BaseModel):
-    title: str
-    price: int
-
-
-class ProductDbSchema(ProductSchema):
-    product_id: int
-
-
 class UserSchema(BaseModel):
     username: str
     email: EmailStr
