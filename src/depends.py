@@ -23,7 +23,7 @@ async def user_doesnt_exists(user: UserSchema, db: Session = Depends(get_db)) ->
 
 
 async def correct_user_id(user_id: int, db: Session = Depends(get_db)) -> User:
-    user = db.query(User).filter(User.user_id == user_id).first()
+    user: User = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
