@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 
 from schemas import UserSchema, UserDbSchema, Token
 from models import User
-from depends import user_doesnt_exists, get_user_by_id, get_current_active_user, get_db
+from depends import unique_user_params, get_user_by_id, get_current_active_user, get_db, authenticate_user
 from config import ACCESS_TOKEN_EXPIRE_MINUTES
-from utils import authenticate_user, create_access_token
+from utils import create_access_token
 
 router = APIRouter()
 
@@ -21,7 +21,7 @@ async def index():
 
 @router.post("/register/", response_model=UserDbSchema)
 async def create_user(
-        user: Annotated[User, Depends(user_doesnt_exists)]
+        user: Annotated[User, Depends(unique_user_params)]
 ):
     new_user_json = UserDbSchema.from_orm(user).json()
     return Response(new_user_json, status_code=status.HTTP_201_CREATED)

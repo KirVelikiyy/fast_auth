@@ -1,23 +1,29 @@
 from typing import Annotated
 
 from fastapi import HTTPException, status, Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from passlib.context import CryptContext
 import jwt
 
-from schemas import UserSchema, TokenData, UserDbSchema
+from schemas import UserSchema, TokenData, CreateUserSchema
 from database import get_db
 from models import User
 from config import SECRET_KEY, ALGORITHM
+from utils import get_password_hash, verify_password
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
 
-async def user_doesnt_exists(user: UserSchema, db: Session = Depends(get_db)) -> User:
-    user_dict = user.dict()
+async def unique_user_params(user: CreateUserSchema, db: Session = Depends(get_db)) -> User:
+    user_dict: dict = user.dict()
+
+    password = user_dict.pop('password')
+    hashed_password = get_password_hash(password)
+    user_dict.update({"hashed_password": hashed_password})
+    print(user_dict)
+
     new_user = User(**user_dict)
     try:
         db.add(new_user)
@@ -72,3 +78,14 @@ async def get_current_active_user(
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+async def authenticate_user(username: str, password: str, db):
+    user = await get_user_by_username(username, db)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+

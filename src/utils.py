@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from passlib.context import CryptContext
 import jwt
 
-from depends import get_user_by_username
 from config import SECRET_KEY, ALGORITHM
 
 
@@ -15,15 +14,6 @@ def verify_password(plain_password, hashed_password):
 
 def get_password_hash(password):
     return pwd_context.hash(password)
-
-
-async def authenticate_user(username: str, password: str, db):
-    user = await get_user_by_username(username, db)
-    if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
-    return user
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):

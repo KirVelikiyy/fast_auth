@@ -9,7 +9,6 @@ class UserSchema(BaseModel):
     last_name: str | None = None
     is_active: bool | None = True
     is_admin: bool | None = False
-    hashed_password: str
 
 
 class UserDbSchema(UserSchema):
@@ -18,6 +17,10 @@ class UserDbSchema(UserSchema):
 
     class Config:
         orm_mode = True
+
+
+class CreateUserSchema(UserSchema):
+    password: str
 
 
 class Token(BaseModel):
