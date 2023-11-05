@@ -11,7 +11,7 @@ from schemas.token import TokenData
 from database import get_db
 from models import User
 from config import SECRET_KEY, ALGORITHM
-from utils.jwt import get_password_hash, verify_password
+from utils.jwt import verify_password
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
@@ -19,12 +19,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
 async def unique_user_params(user: CreateUserSchema, db: Session = Depends(get_db)) -> User:
     user_dict: dict = user.dict()
-
-    password = user_dict.pop('password')
-    hashed_password = get_password_hash(password)
-    user_dict.update({"hashed_password": hashed_password})
-
-    new_user = User(**user_dict)
+    new_user: User = User(**user_dict)
     try:
         db.add(new_user)
         db.commit()

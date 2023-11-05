@@ -8,6 +8,7 @@ from sqlalchemy import (
 )
 
 from database import engine, Base
+from utils.jwt import get_password_hash
 
 
 class User(Base):
@@ -21,6 +22,17 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
     hashed_password = Column(String, nullable=False)
     added_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('Now()'))
+
+    def __init__(self, **kwargs):
+        password = kwargs.pop('password')
+        hashed_password = self.hash_password(password)
+        kwargs.update({"hashed_password": hashed_password})
+
+        super(User, self).__init__(**kwargs)
+
+    @staticmethod
+    def hash_password(password: str) -> str:
+        return get_password_hash(password)
 
 
 Base.metadata.create_all(bind=engine)
