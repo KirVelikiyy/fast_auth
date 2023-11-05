@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from schemas import UserDbSchema, Token
 from models import User
-from depends import unique_user_params, get_user_by_id, get_current_active_user, get_db, authenticate_user
+from depends import unique_user_params, get_current_active_user, get_db, authenticate_user
 from config import ACCESS_TOKEN_EXPIRE_MINUTES
 from utils import create_access_token
 
@@ -25,12 +25,6 @@ async def create_user(
 ):
     new_user_json = UserDbSchema.from_orm(user).json()
     return Response(new_user_json, status_code=status.HTTP_201_CREATED)
-
-
-@router.get("/users/{user_id}", response_model=UserDbSchema)
-async def get_user(user: Annotated[User, Depends(get_user_by_id)]):
-    user_json = UserDbSchema.from_orm(user).json()
-    return Response(user_json, status_code=status.HTTP_200_OK)
 
 
 @router.post("/token", response_model=Token)
