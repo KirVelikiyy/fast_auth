@@ -22,7 +22,6 @@ async def unique_user_params(user: CreateUserSchema, db: Session = Depends(get_d
     password = user_dict.pop('password')
     hashed_password = get_password_hash(password)
     user_dict.update({"hashed_password": hashed_password})
-    print(user_dict)
 
     new_user = User(**user_dict)
     try:
@@ -47,12 +46,15 @@ async def get_user_by_id(user_id: int, db: Session = Depends(get_db)) -> User:
     return user
 
 
-async def get_user_by_username(username: str, db: Session = Depends(get_db)) -> User:
+async def get_user_by_username(username: str, db: Annotated[Session, Depends(get_db)]) -> User:
     user: User = db.query(User).filter(User.username == username).first()
     return user
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_current_user(
+        token: Annotated[str, Depends(oauth2_scheme)],
+        db: Annotated[Session, Depends(get_db)]
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -66,7 +68,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         token_data = TokenData(username=username)
     except jwt.PyJWTError:
         raise credentials_exception
-    user = get_user_by_username(token_data.username)
+    user = await get_user_by_username(token_data.username, db)
     if user is None:
         raise credentials_exception
     return user
