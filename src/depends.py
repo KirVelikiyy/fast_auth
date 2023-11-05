@@ -4,14 +4,11 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-import jwt
 
 from schemas.user import UserSchema, CreateUserSchema
-from schemas.token import TokenData
 from database import get_db
 from models import User
-from config import SECRET_KEY, ALGORITHM
-from utils.jwt import verify_password
+from utils.jwt import verify_password, decode_token
 from exceptions.response import HTTPResponseException
 
 
@@ -39,14 +36,7 @@ async def get_current_user(
         token: Annotated[str, Depends(oauth2_scheme)],
         db: Annotated[Session, Depends(get_db)]
 ):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise HTTPResponseException.invalid_credentials()
-        token_data = TokenData(username=username)
-    except jwt.PyJWTError:
-        raise HTTPResponseException.invalid_credentials()
+    token_data = decode_token(token)
     user = await get_user_by_username(token_data.username, db)
     if user is None:
         raise HTTPResponseException.invalid_credentials()
