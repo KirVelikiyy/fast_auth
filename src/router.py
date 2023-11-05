@@ -15,11 +15,6 @@ from utils.jwt import create_access_token
 router = APIRouter()
 
 
-@router.get('/')
-async def index():
-    return {'message': 'it is work'}
-
-
 @router.post("/register/", response_model=UserDbSchema)
 async def create_user(
         user: Annotated[User, Depends(unique_user_params)]

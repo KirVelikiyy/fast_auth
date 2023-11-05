@@ -37,16 +37,6 @@ async def unique_user_params(user: CreateUserSchema, db: Session = Depends(get_d
     return new_user
 
 
-async def get_user_by_id(user_id: int, db: Session = Depends(get_db)) -> User:
-    user: User = db.query(User).filter(User.user_id == user_id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Invalid user_id parameter'
-        )
-    return user
-
-
 async def get_user_by_username(username: str, db: Annotated[Session, Depends(get_db)]) -> User:
     user: User = db.query(User).filter(User.username == username).first()
     return user
