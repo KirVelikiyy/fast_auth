@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from helpers import getenv_variable
+from utils.env import getenv_variable
 
 load_dotenv()
 

@@ -6,11 +6,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 import jwt
 
-from schemas import UserSchema, TokenData, CreateUserSchema
+from schemas.user import UserSchema, CreateUserSchema
+from schemas.token import TokenData
 from database import get_db
 from models import User
 from config import SECRET_KEY, ALGORITHM
-from utils import get_password_hash, verify_password
+from utils.jwt import get_password_hash, verify_password
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
@@ -89,5 +90,3 @@ async def authenticate_user(username: str, password: str, db):
     if not verify_password(password, user.hashed_password):
         return False
     return user
-
-
