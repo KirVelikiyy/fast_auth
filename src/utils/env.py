@@ -1,5 +1,5 @@
 import os
-from exceptions import LoadEnvException
+from exceptions.develop import LoadEnvException
 
 
 def getenv_variable(key: str) -> str:
