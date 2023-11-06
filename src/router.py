@@ -2,13 +2,11 @@ from typing import Annotated
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, Response, status
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 
 from schemas.user import UserDbSchema
 from schemas.token import Token
 from models import User
-from depends import unique_user_params, get_current_active_user, get_db, authenticate_user
+from depends import unique_user_params, get_current_active_user, authenticate_user
 from config import ACCESS_TOKEN_EXPIRE_MINUTES
 from utils.jwt import create_access_token
 from exceptions.response import HTTPResponseException
@@ -26,10 +24,8 @@ async def create_user(
 
 @router.post("/token/", response_model=Token)
 async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: Annotated[Session, Depends(get_db)]
+    user: Annotated[User, Depends(authenticate_user)]
 ):
-    user = await authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPResponseException.incorrect_username_or_pass()
 
