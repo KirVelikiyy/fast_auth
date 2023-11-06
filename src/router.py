@@ -24,7 +24,7 @@ async def create_user(
     return Response(new_user_json, status_code=status.HTTP_201_CREATED)
 
 
-@router.post("/token", response_model=Token)
+@router.post("/token/", response_model=Token)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[Session, Depends(get_db)]
