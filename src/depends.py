@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from schemas.user import UserSchema, CreateUserSchema
 from database import get_db
 from models import User
-from utils.jwt import verify_password, decode_token
+from utils.jwt import TokenManager
 from exceptions.response import HTTPResponseException
 
 
@@ -39,10 +39,10 @@ async def get_user_by_username(
 
 
 async def get_current_user(
-        token: Annotated[str, Depends(oauth2_scheme)],
+        access_token: Annotated[str, Depends(oauth2_scheme)],
         db: Annotated[Session, Depends(get_db)]
 ) -> User:
-    token_data = decode_token(token)
+    token_data = TokenManager.decode_token(access_token)
     user = await get_user_by_username(token_data.username, db)
     if user is None:
         raise HTTPResponseException.invalid_credentials()
@@ -51,7 +51,7 @@ async def get_current_user(
 
 async def get_current_active_user(
     current_user: Annotated[UserSchema, Depends(get_current_user)]
-) -> User:
+) -> UserSchema:
     if not current_user.is_active:
         raise HTTPResponseException.inactive_user()
     return current_user
@@ -64,6 +64,6 @@ async def authenticate_user(
     user = await get_user_by_username(form_data.username, db)
     if not user:
         return False
-    if not verify_password(form_data.password, user.hashed_password):
+    if not TokenManager.verify_password(form_data.password, user.hashed_password):
         return False
     return user

@@ -8,7 +8,7 @@ from sqlalchemy import (
 )
 
 from database import engine, Base
-from utils.jwt import get_password_hash
+from utils.jwt import TokenManager
 
 
 class User(Base):
@@ -32,7 +32,7 @@ class User(Base):
 
     @staticmethod
     def hash_password(password: str) -> str:
-        return get_password_hash(password)
+        return TokenManager.get_password_hash(password)
 
 
 Base.metadata.create_all(bind=engine)

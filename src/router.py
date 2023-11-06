@@ -1,14 +1,11 @@
 from typing import Annotated
-from datetime import timedelta
-
 from fastapi import APIRouter, Depends, Response, status
 
 from schemas.user import UserDbSchema
-from schemas.token import Token
+from schemas.token import TokenResponse
 from models import User
 from depends import unique_user_params, get_current_active_user, authenticate_user
-from config import ACCESS_TOKEN_EXPIRE_MINUTES
-from utils.jwt import create_access_token
+from utils.jwt import TokenManager
 from exceptions.response import HTTPResponseException
 
 router = APIRouter()
@@ -22,18 +19,25 @@ async def create_user(
     return Response(new_user_json, status_code=status.HTTP_201_CREATED)
 
 
-@router.post("/token/", response_model=Token)
+@router.post("/login/", response_model=TokenResponse)
 async def login_for_access_token(
     user: Annotated[User, Depends(authenticate_user)]
 ):
     if not user:
         raise HTTPResponseException.incorrect_username_or_pass()
 
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+    access_token = TokenManager.create_access_token(
+        data={
+            "sub": user.username
+        }
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_token = TokenManager.create_refresh_token(
+        data={
+            "sub": user.username,
+            "access_token": access_token,
+        }
+    )
+    return {"access_token": access_token, "refresh_token": refresh_token}
 
 
 @router.get("/users/me/", response_model=UserDbSchema)
