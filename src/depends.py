@@ -15,7 +15,7 @@ from exceptions.response import HTTPResponseException
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
 
-async def unique_user_params(
+async def create_user(
         user: CreateUserSchema,
         db: Session = Depends(get_db)
 ) -> User:

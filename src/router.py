@@ -4,23 +4,24 @@ from fastapi import APIRouter, Depends, Response, status
 from schemas.user import UserDbSchema
 from schemas.token import TokenResponse
 from models import User
-from depends import unique_user_params, get_current_active_user, authenticate_user
+from depends import create_user, get_current_active_user, authenticate_user
 from utils.jwt import TokenManager
 from exceptions.response import HTTPResponseException
+
 
 router = APIRouter()
 
 
 @router.post("/register/", response_model=UserDbSchema)
-async def create_user(
-        user: Annotated[User, Depends(unique_user_params)]
+async def register(
+        user: Annotated[User, Depends(create_user)]
 ):
     new_user_json = UserDbSchema.from_orm(user).json()
     return Response(new_user_json, status_code=status.HTTP_201_CREATED)
 
 
 @router.post("/login/", response_model=TokenResponse)
-async def login_for_access_token(
+async def login(
     user: Annotated[User, Depends(authenticate_user)]
 ):
     if not user:
