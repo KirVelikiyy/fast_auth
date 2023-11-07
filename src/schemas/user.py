@@ -12,7 +12,7 @@ class UserSchema(BaseModel):
 
 
 class UserDbSchema(UserSchema):
-    user_id: int
+    id: int
     added_at: datetime
 
     class Config:
