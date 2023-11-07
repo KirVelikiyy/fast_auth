@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from schemas.user import UserSchema, CreateUserSchema
 from database import get_db
-from models import User
+from models.user import User
 from utils.jwt import TokenManager
 from exceptions.response import HTTPResponseException
 

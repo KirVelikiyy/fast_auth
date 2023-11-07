@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Response, status
 
 from schemas.user import UserDbSchema
 from schemas.token import TokenResponse
-from models import User
+from models.user import User
 from depends import create_user, get_current_active_user, authenticate_user
 from utils.jwt import TokenManager
 from exceptions.response import HTTPResponseException

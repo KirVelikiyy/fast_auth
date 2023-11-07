@@ -1,19 +1,13 @@
-from sqlalchemy import (
-    Column,
-    String,
-    Integer,
-    TIMESTAMP,
-    text,
-    Boolean
-)
+from sqlalchemy import Column, String, TIMESTAMP, Boolean, text
+from sqlalchemy.orm import relationship, Mapped
 
-from database import engine, Base
 from utils.jwt import TokenManager
+from .base import Model
+from .session import AuthSession
 
 
-class User(Base):
+class User(Model):
     __tablename__ = 'users'
-    user_id = Column(Integer, primary_key=True)
     username = Column(String(50), nullable=False, unique=True, index=True)
     email = Column(String(60), nullable=True, unique=True)
     first_name = Column(String(20), nullable=True)
@@ -33,6 +27,3 @@ class User(Base):
     @staticmethod
     def hash_password(password: str) -> str:
         return TokenManager.get_password_hash(password)
-
-
-Base.metadata.create_all(bind=engine)
