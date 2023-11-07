@@ -8,8 +8,3 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    refresh_token: str

@@ -2,10 +2,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Response, status
 
 from schemas.user import UserDbSchema
-from schemas.token import TokenResponse
+from schemas.session import AuthTokens, AuthTokensDb
 from models.user import User
 from depends import create_user, get_current_active_user, authenticate_user
-from utils.jwt import TokenManager
 from exceptions.response import HTTPResponseException
 
 
@@ -20,25 +19,14 @@ async def register(
     return Response(new_user_json, status_code=status.HTTP_201_CREATED)
 
 
-@router.post("/login/", response_model=TokenResponse)
+@router.post("/login/", response_model=AuthTokens)
 async def login(
-    user: Annotated[User, Depends(authenticate_user)]
+    auth_tokens_db: Annotated[AuthTokensDb, Depends(authenticate_user)]
 ):
-    if not user:
+    if not auth_tokens_db:
         raise HTTPResponseException.incorrect_username_or_pass()
-
-    access_token = TokenManager.create_access_token(
-        data={
-            "sub": user.username
-        }
-    )
-    refresh_token = TokenManager.create_refresh_token(
-        data={
-            "sub": user.username,
-            "access_token": access_token,
-        }
-    )
-    return {"access_token": access_token, "refresh_token": refresh_token}
+    auth_tokens_json = AuthTokens(**auth_tokens_db.dict()).json()
+    return Response(auth_tokens_json, status_code=status.HTTP_201_CREATED)
 
 
 @router.get("/users/me/", response_model=UserDbSchema)

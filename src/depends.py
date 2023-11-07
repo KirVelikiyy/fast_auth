@@ -6,8 +6,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from schemas.user import UserSchema, CreateUserSchema
+from schemas.session import AuthTokensDb, AuthTokens
 from database.database import get_db
 from models.user import User
+from models.session import AuthSession
 from utils.jwt import TokenManager
 from exceptions.response import HTTPResponseException
 
@@ -28,6 +30,28 @@ async def create_user(
     except IntegrityError:
         raise HTTPResponseException.user_exists()
     return new_user
+
+
+async def create_auth_session(user: User, db: Annotated[Session, Depends(get_db)]) -> AuthTokensDb:
+    access_token = TokenManager.create_access_token(
+        data={
+            "sub": user.username
+        }
+    )
+    refresh_token = TokenManager.create_refresh_token(
+        data={
+            "sub": user.username
+        }
+    )
+
+    auth_tokens = AuthTokensDb(user_id=user.id, access_token=access_token, refresh_token=refresh_token)
+    new_auth_session = AuthSession(**auth_tokens.dict())
+
+    db.add(new_auth_session)
+    db.commit()
+    db.refresh(new_auth_session)
+
+    return auth_tokens
 
 
 async def get_user_by_username(
@@ -60,10 +84,12 @@ async def get_current_active_user(
 async def authenticate_user(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         db: Annotated[Session, Depends(get_db)],
-) -> bool | User:
+) -> bool | AuthTokensDb:
     user = await get_user_by_username(form_data.username, db)
     if not user:
         return False
     if not TokenManager.verify_password(form_data.password, user.hashed_password):
         return False
-    return user
+
+    auth_tokens = await create_auth_session(user, db)
+    return auth_tokens
