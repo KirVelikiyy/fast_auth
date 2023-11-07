@@ -12,23 +12,33 @@ pwd_context = CryptContext(schemes=["sha256_crypt", "md5_crypt"])
 
 class TokenGenerator:
     @classmethod
-    def create_token(cls, data: dict, expires_delta: timedelta) -> str:
-        to_encode = data.copy()
+    def create_token(cls, expires_delta: timedelta, **kwargs) -> str:
+        to_encode = kwargs.copy()
         expire = datetime.utcnow() + expires_delta
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
 
     @classmethod
-    def create_access_token(cls, data: dict, expire_minutes: int | None = None) -> str:
+    def create_access_token(cls, expire_minutes: int | None = None, **kwargs) -> str:
+        """
+
+        :param expire_minutes:
+        :param kwargs: sub (subject) - username
+        """
         expires_delta = timedelta(minutes=expire_minutes or ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = cls.create_token(data, expires_delta)
+        access_token = cls.create_token(expires_delta, **kwargs)
         return access_token
 
     @classmethod
-    def create_refresh_token(cls, data: dict, expire_hours: int | None = None) -> str:
+    def create_refresh_token(cls, expire_hours: int | None = None, **kwargs) -> str:
+        """
+
+        :param expire_hours:
+        :param kwargs: sub (subject) - username
+        """
         expires_delta = timedelta(hours=expire_hours or REFRESH_TOKEN_EXPIRE_HOURS)
-        refresh_token = cls.create_token(data, expires_delta)
+        refresh_token = cls.create_token(expires_delta, **kwargs)
         return refresh_token
 
 

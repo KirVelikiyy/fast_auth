@@ -19,14 +19,15 @@ async def register(
     return Response(new_user_json, status_code=status.HTTP_201_CREATED)
 
 
-@router.post("/login/", response_model=AuthTokens)
+@router.post("/login/")
 async def login(
     auth_tokens_db: Annotated[AuthTokensDb, Depends(authenticate_user)]
 ):
     if not auth_tokens_db:
         raise HTTPResponseException.incorrect_username_or_pass()
-    auth_tokens_json = AuthTokens(**auth_tokens_db.dict()).json()
-    return Response(auth_tokens_json, status_code=status.HTTP_201_CREATED)
+    auth_tokens_dict = AuthTokens(**auth_tokens_db.dict()).dict()
+
+    return auth_tokens_dict
 
 
 @router.get("/users/me/", response_model=UserDbSchema)

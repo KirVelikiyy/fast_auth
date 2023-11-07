@@ -14,7 +14,7 @@ from utils.jwt import TokenManager
 from exceptions.response import HTTPResponseException
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 
 
 async def create_user(
@@ -33,16 +33,8 @@ async def create_user(
 
 
 async def create_auth_session(user: User, db: Annotated[Session, Depends(get_db)]) -> AuthTokensDb:
-    access_token = TokenManager.create_access_token(
-        data={
-            "sub": user.username
-        }
-    )
-    refresh_token = TokenManager.create_refresh_token(
-        data={
-            "sub": user.username
-        }
-    )
+    access_token = TokenManager.create_access_token(sub=user.username)
+    refresh_token = TokenManager.create_refresh_token(sub=user.username)
 
     auth_tokens = AuthTokensDb(user_id=user.id, access_token=access_token, refresh_token=refresh_token)
     new_auth_session = AuthSession(**auth_tokens.dict())
