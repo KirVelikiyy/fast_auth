@@ -16,6 +16,7 @@ class User(Model):
     is_admin = Column(Boolean, default=False)
     hashed_password = Column(String, nullable=False)
     added_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('Now()'))
+    auth_sessions: Mapped[list["AuthSession"]] = relationship()
 
     def __init__(self, **kwargs):
         password = kwargs.pop('password')
