@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from schemas.user import UserSchema, CreateUserSchema
-from schemas.session import AuthTokensDb, AuthTokens
+from schemas.session import AuthTokensDb
 from database.database import get_db
 from models.user import User
 from models.session import AuthSession
@@ -24,9 +24,7 @@ async def create_user(
     user_dict: dict = user.dict()
     new_user: User = User(**user_dict)
     try:
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
+        new_user.add_to_db(db)
     except IntegrityError:
         raise HTTPResponseException.user_exists()
     return new_user
@@ -39,9 +37,7 @@ async def create_auth_session(user: User, db: Annotated[Session, Depends(get_db)
     auth_tokens = AuthTokensDb(user_id=user.id, access_token=access_token, refresh_token=refresh_token)
     new_auth_session = AuthSession(**auth_tokens.dict())
 
-    db.add(new_auth_session)
-    db.commit()
-    db.refresh(new_auth_session)
+    new_auth_session.add_to_db(db)
 
     return auth_tokens
 
