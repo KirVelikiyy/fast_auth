@@ -7,4 +7,4 @@ class AuthTokens(BaseModel):
 
 
 class AuthTokensDb(AuthTokens):
-    user_id: int
+    username: str

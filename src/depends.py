@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from schemas.token import TokenData
-from schemas.user import UserSchema, CreateUserSchema
+from schemas.user import CreateUserSchema
 from schemas.session import AuthTokensDb
 from database.database import get_db
 from models.user import User
@@ -40,7 +40,7 @@ async def create_auth_session(
         ]
 ) -> AuthTokensDb:
 
-    auth_tokens = await create_session_tokens(user.username, user.id)
+    auth_tokens = await create_session_tokens(user.username)
     new_auth_session = AuthSession(**auth_tokens.dict())
 
     new_auth_session.add_to_db(db)
@@ -51,8 +51,7 @@ async def create_auth_session(
 async def get_user_by_username(
         username: str,
         db: Annotated[
-            Session,
-            Depends(get_db)
+            Session, Depends(get_db)
         ]
 ) -> User:
 
@@ -69,8 +68,7 @@ async def get_current_user(
             Depends(oauth2_scheme)
         ],
         db: Annotated[
-            Session,
-            Depends(get_db)
+            Session, Depends(get_db)
         ]
 ) -> User:
     token_data = TokenManager.decode_token(access_token)
@@ -80,25 +78,29 @@ async def get_current_user(
     return user
 
 
+async def user_is_active(
+        user: User
+) -> None:
+    if not user.is_active:
+        raise HTTPResponseException.inactive_user()
+
+
 async def get_current_active_user(
     current_user: Annotated[
-        UserSchema,
+        User,
         Depends(get_current_user)
     ]
-) -> UserSchema:
-    if not current_user.is_active:
-        raise HTTPResponseException.inactive_user()
+) -> User:
+    await user_is_active(current_user)
     return current_user
 
 
 async def authenticate_user(
         form_data: Annotated[
-            OAuth2PasswordRequestForm,
-            Depends()
+            OAuth2PasswordRequestForm, Depends()
         ],
         db: Annotated[
-            Session,
-            Depends(get_db)
+            Session, Depends(get_db)
         ],
 ) -> AuthTokensDb:
     user = await get_user_by_username(form_data.username, db)
@@ -117,28 +119,40 @@ async def check_refresh_token(
     return token_data, refresh_token
 
 
-async def refresh_tokens(
+async def get_session(
         refresh_token_data: Annotated[
             tuple[TokenData, str],
             Depends(check_refresh_token)
         ],
         db: Annotated[
-            Session,
-            Depends(get_db)
+            Session, Depends(get_db)
         ]
-) -> AuthTokensDb:
+) -> AuthSession:
     token_data, refresh_token = refresh_token_data
-    username = token_data.username
-    user = await get_user_by_username(username, db)
+
     session: AuthSession | None = db.query(AuthSession).filter(and_(
-        AuthSession.user_id == user.id,
+        AuthSession.username == token_data.username,
         AuthSession.refresh_token == refresh_token
     )).first()
 
     if not session:
         raise HTTPResponseException.invalid_refresh_token()
+    return session
 
-    new_auth_tokens = await create_session_tokens(username, user.id)
+
+async def refresh_tokens(
+        session: Annotated[
+            AuthSession,
+            Depends(get_session)
+        ],
+        db: Annotated[
+            Session, Depends(get_db)
+        ]
+) -> AuthTokensDb:
+    user = await get_user_by_username(session.username, db)
+    await user_is_active(user)
+
+    new_auth_tokens = await create_session_tokens(user.username)
 
     session.refresh_token = new_auth_tokens.refresh_token
     session.access_token = new_auth_tokens.access_token
