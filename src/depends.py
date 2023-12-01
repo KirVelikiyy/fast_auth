@@ -13,6 +13,7 @@ from database.database import get_db
 from models.user import User
 from models.session import AuthSession
 from utils.jwt import TokenManager
+from utils.session import create_session_tokens
 from exceptions.response import HTTPResponseException
 
 
@@ -38,10 +39,8 @@ async def create_auth_session(
             Session, Depends(get_db)
         ]
 ) -> AuthTokensDb:
-    access_token = TokenManager.create_access_token(sub=user.username)
-    refresh_token = TokenManager.create_refresh_token(sub=user.username)
 
-    auth_tokens = AuthTokensDb(user_id=user.id, access_token=access_token, refresh_token=refresh_token)
+    auth_tokens = await create_session_tokens(user.username, user.id)
     new_auth_session = AuthSession(**auth_tokens.dict())
 
     new_auth_session.add_to_db(db)
@@ -139,18 +138,11 @@ async def refresh_tokens(
     if not session:
         raise HTTPResponseException.invalid_refresh_token()
 
-    new_access_token = TokenManager.create_access_token(sub=username)
-    new_refresh_token = TokenManager.create_refresh_token(sub=username)
+    new_auth_tokens = await create_session_tokens(username, user.id)
 
-    session.refresh_token = new_refresh_token
-    session.access_token = new_access_token
+    session.refresh_token = new_auth_tokens.refresh_token
+    session.access_token = new_auth_tokens.access_token
 
     session.add_to_db(db)
 
-    auth_tokens = AuthTokensDb(
-        user_id=user.id,
-        access_token=new_access_token,
-        refresh_token=new_refresh_token
-    )
-
-    return auth_tokens
+    return new_auth_tokens
