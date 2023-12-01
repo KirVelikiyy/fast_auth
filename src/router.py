@@ -5,7 +5,6 @@ from schemas.user import UserDbSchema
 from schemas.session import AuthTokens, AuthTokensDb
 from models.user import User
 from depends import create_user, get_current_active_user, authenticate_user
-from exceptions.response import HTTPResponseException
 
 
 router = APIRouter()
@@ -23,8 +22,6 @@ async def register(
 async def login(
     auth_tokens_db: Annotated[AuthTokensDb, Depends(authenticate_user)]
 ):
-    if not auth_tokens_db:
-        raise HTTPResponseException.incorrect_username_or_pass()
     auth_tokens_dict = AuthTokens(**auth_tokens_db.dict()).dict()
 
     return auth_tokens_dict

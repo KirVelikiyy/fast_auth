@@ -74,10 +74,9 @@ async def authenticate_user(
         db: Annotated[Session, Depends(get_db)],
 ) -> bool | AuthTokensDb:
     user = await get_user_by_username(form_data.username, db)
-    if not user:
-        return False
-    if not TokenManager.verify_password(form_data.password, user.hashed_password):
-        return False
+
+    if not user or not TokenManager.verify_password(form_data.password, user.hashed_password):
+        raise HTTPResponseException.incorrect_username_or_pass()
 
     auth_tokens = await create_auth_session(user, db)
     return auth_tokens
