@@ -9,7 +9,7 @@ class HTTPResponseException:
 
     """
     @staticmethod
-    def user_exists():
+    def user_already_exists():
         return HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail='User with that e-mail or username already exists'
@@ -36,4 +36,11 @@ class HTTPResponseException:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    @staticmethod
+    def invalid_refresh_token():
+        return HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid refresh token"
         )
