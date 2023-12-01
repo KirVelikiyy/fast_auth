@@ -72,7 +72,7 @@ async def get_current_active_user(
 async def authenticate_user(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         db: Annotated[Session, Depends(get_db)],
-) -> bool | AuthTokensDb:
+) -> AuthTokensDb:
     user = await get_user_by_username(form_data.username, db)
 
     if not user or not TokenManager.verify_password(form_data.password, user.hashed_password):
