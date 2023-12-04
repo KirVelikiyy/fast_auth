@@ -24,8 +24,10 @@ def development_env(wrapper):
 
 
 @development_env
-def getenv_variable(key: str) -> str:
+def getenv_variable(key: str, int_v: bool = False) -> str | int:
     value = os.getenv(key)
     if not value:
         raise LoadEnvException
+    if int_v:
+        return int(value)
     return value

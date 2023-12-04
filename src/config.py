@@ -3,9 +3,9 @@ from utils.env import getenv_variable
 
 load_dotenv()
 
-SECRET_KEY = getenv_variable('SECRET_KEY')
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-REFRESH_TOKEN_EXPIRE_HOURS = 24
+SECRET_KEY: str = getenv_variable('SECRET_KEY')
+ALGORITHM: str = getenv_variable('ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES: int = getenv_variable('ACCESS_TOKEN_EXPIRE_MINUTES', int_v=True)
+REFRESH_TOKEN_EXPIRE_HOURS: int = getenv_variable('REFRESH_TOKEN_EXPIRE_HOURS', int_v=True)
 
-POSTGRES_URI = getenv_variable('POSTGRES_URI')
+POSTGRES_URI: str = getenv_variable('POSTGRES_URI')

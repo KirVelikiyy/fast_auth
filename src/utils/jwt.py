@@ -7,7 +7,7 @@ from schemas.token import TokenData
 from exceptions.response import HTTPResponseException
 
 
-pwd_context = CryptContext(schemes=["sha256_crypt", "md5_crypt"])
+pwd_context = CryptContext(schemes=[f"{ALGORITHM.lower()}_crypt", "md5_crypt"])
 
 
 class TokenGenerator:
