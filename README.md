@@ -20,7 +20,7 @@ This repository contains a microservice for user authentication and registration
 git clone https://github.com/KirVelikiyy/fast_auth.git
 cd fast_auth
 ```
-Create a .env file in the project root and configure the following variables:
+### Create a .env file in the project root and configure the following variables:
 
 ```
 SECRET_KEY=mysecretkey
@@ -40,7 +40,7 @@ DEV_POSTGRES_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/${
 ```
 Adjust the values according to your security preferences.
 
-Build and run the containers using Docker Compose:
+### Build and run the containers using Docker Compose:
 
 ```bash
 docker-compose up -d --build
