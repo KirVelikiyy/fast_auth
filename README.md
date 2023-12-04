@@ -17,14 +17,17 @@ This repository contains a microservice for user authentication and registration
 ### Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
+git clone https://github.com/KirVelikiyy/fast_auth.git
+cd fast_auth
 ```
 Create a .env file in the project root and configure the following variables:
 
-```env
-# Example .env file
+```
 SECRET_KEY=mysecretkey
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_HOURS=24
+
 POSTGRES_DB=your_database
 POSTGRES_USER=your_postgres_user
 POSTGRES_PASSWORD=postgres_pass
@@ -34,14 +37,12 @@ POSTGRES_HOST_AUTH_METHOD=md5
 # postgresql://[ user:pass @][ hostspec ][/ dbname ]
 POSTGRES_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}
 DEV_POSTGRES_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/${POSTGRES_DB}
-
 ```
 Adjust the values according to your security preferences.
 
 Build and run the containers using Docker Compose:
 
 ```bash
-Copy code
 docker-compose up -d --build
 ```
 Visit http://localhost:8000/docs in your browser to access the FastAPI Swagger documentation.
